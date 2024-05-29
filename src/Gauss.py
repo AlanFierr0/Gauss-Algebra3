@@ -13,6 +13,23 @@ class Gauss:
                     a[i][j] = a[i][j] - aux * a[k][j]
                 b[i] = b[i] - aux * b[k]
 
+    def _parteDescendenteOpt(self, a, b):
+        n = len(b)
+        for k in range(n):
+            aux = a[k][k]
+            if k > 0:
+                a[k][k - 1] = a[k][k - 1] / aux
+            a[k][k] /= a[k][k]
+            if k < n - 1:
+                a[k][k + 1] = a[k][k + 1] / aux
+            b[k] = b[k] / aux
+
+            if k < n - 1:
+                aux = a[k + 1][k]
+                a[k + 1][k] = 0.0
+                a[k + 1][k + 1] = a[k + 1][k + 1] - aux * a[k][k + 1]
+                b[k + 1] = b[k + 1] - aux * b[k]
+
     def _parteAcendente(self, a, b):
         n = len(b)
         x = list(range(n))
@@ -43,18 +60,23 @@ class Gauss:
         b[index] = primerResultado
         return self.gauss(a, b)
 
-
+    def gaussOptTrdiagonal(self, a, b):
+        self._parteDescendenteOpt(a, b)
+        return self._parteAcendente(a, b)
 
 matriz = [
-    [1, 2, 2],
-    [2, 5, 8],
-    [3, 6, 9]
+    [1, 2, 0, 0],
+    [2, 5, 8, 0],
+    [0, 3, 6, 9],
+    [0, 0, 4, 5]
 ]
 
-resultado = [1, 2, 3]
+resultado = [1, 2, 3, 4]
 
 gauss = Gauss()
 
 # print(gauss.gauss(matriz, resultado))
 
 # print(gauss.gaussConPivote(matriz, resultado))
+
+print(gauss.gaussOptTrdiagonal(matriz, resultado))
