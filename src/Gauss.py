@@ -1,13 +1,17 @@
+import random
+
 class Gauss:
 
     def _parteDecendente(self, a, b):
         n = len(b)
         for k in range(n):
             aux = a[k][k]
+            if aux == 0:
+                continue  # Skip division by zero
             for j in range(k):
-                a[k][j] = a[k][j]/aux
-            b[k] = b[k]/aux
-            for i in range(k+1, n):
+                a[k][j] = a[k][j] / aux
+            b[k] = b[k] / aux
+            for i in range(k + 1, n):
                 aux = a[i][k]
                 for j in range(k, n):
                     a[i][j] = a[i][j] - aux * a[k][j]
@@ -17,6 +21,8 @@ class Gauss:
         n = len(b)
         for k in range(n):
             aux = a[k][k]
+            if aux == 0:
+                continue  # Skip division by zero
             if k > 0:
                 a[k][k - 1] = a[k][k - 1] / aux
             a[k][k] /= a[k][k]
@@ -64,19 +70,58 @@ class Gauss:
         self._parteDescendenteOpt(a, b)
         return self._parteAcendente(a, b)
 
-matriz = [
-    [1, 2, 0, 0],
-    [2, 5, 8, 0],
-    [0, 3, 6, 9],
-    [0, 0, 4, 5]
-]
+class TestGauss:
 
-resultado = [1, 2, 3, 4]
+    def __init__(self):
+        self.gauss = Gauss()
 
-gauss = Gauss()
+    def random_tridiagonal_matrices(self, size):
 
-# print(gauss.gauss(matriz, resultado))
+        a = [[random.randint(1, 10) if abs(i-j) <= 1 else 0 for j in range(size)] for i in range(size)]
+        b = [random.randint(1, 10) for _ in range(size)]
+        return a, b
 
-# print(gauss.gaussConPivote(matriz, resultado))
+    def random_full_matrices(self, size):
 
-print(gauss.gaussOptTrdiagonal(matriz, resultado))
+        scale_factor = 10
+        a = [[random.randint(1, 10) // scale_factor for _ in range(size)] for _ in range(size)]
+        b = [random.randint(1, 10) // scale_factor for _ in range(size)]
+        return a, b
+
+    def test_tridiagonal_matrices(self):
+
+        for size in [100, 1000]:
+            a, b = self.random_tridiagonal_matrices(size)
+            print("Matriz original (a):")
+            for row in a:
+                print(row)
+            print("Vector b original:")
+            print(b)
+
+            result = self.gauss.gaussOptTrdiagonal(a, b)
+            print("Resultado después de aplicar la eliminación gaussiana:")
+            print(result)
+
+
+            assert len(result) == len(b), "La longitud de la solución no coincide con el vector b"
+
+    def test_full_matrices(self):
+
+        for size in [30, 50]:
+            a, b = self.random_full_matrices(size)
+            print("Matriz original (a):")
+            for row in a:
+                print(row)
+            print("Vector b original:")
+            print(b)
+
+            result = self.gauss.gauss(a, b)
+            print("Resultado después de aplicar la eliminación gaussiana:")
+            print(result)
+            assert len(result) == len(b), "La longitud de la solución no coincide con el vector b"
+
+
+
+tester = TestGauss()
+tester.test_tridiagonal_matrices()
+tester.test_full_matrices()
