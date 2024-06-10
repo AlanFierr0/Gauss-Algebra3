@@ -1,4 +1,6 @@
 import random
+from datetime import time, datetime
+
 
 class Gauss:
 
@@ -47,7 +49,7 @@ class Gauss:
             x[i] = b[i] - suma
         return x
 
-    def gauss(self, a, b, opt=False):
+    def gauss(self, a, b):
         self._parteDecendente(a, b)
         return self._parteAcendente(a, b)
 
@@ -120,8 +122,21 @@ class TestGauss:
             print(result)
             assert len(result) == len(b), "La longitud de la solución no coincide con el vector b"
 
-
+    def test_time_matrx(self):
+        size = 800
+        a, b = self.random_tridiagonal_matrices(size)
+        initial_nonOpt_time = datetime.now()
+        self.gauss.gauss(a, b)
+        final_nonOpt_time = datetime.now()
+        delta_non_opt = final_nonOpt_time - initial_nonOpt_time
+        initial_opt_time = datetime.now()
+        self.gauss.gaussOptTrdiagonal(a, b)
+        final_opt_time = datetime.now()
+        delta_opt_time = final_opt_time - initial_opt_time
+        print(f"Funcion no optimizada tardo {delta_non_opt.total_seconds()} segundos")
+        print(f"Funcion optimizada tardo {delta_opt_time.total_seconds()} segundos")
 
 tester = TestGauss()
 tester.test_tridiagonal_matrices()
+tester.test_time_matrx()
 tester.test_full_matrices()
