@@ -1,6 +1,6 @@
 import random
 from datetime import time, datetime
-
+import numpy as np
 
 class Gauss:
 
@@ -10,14 +10,16 @@ class Gauss:
             aux = a[k][k]
             if aux == 0:
                 continue  # Skip division by zero
-            for j in range(k):
+            # Normalize the pivot row
+            for j in range(k, n):  # Note: should start from k
                 a[k][j] = a[k][j] / aux
             b[k] = b[k] / aux
+            # Eliminate the current column
             for i in range(k + 1, n):
-                aux = a[i][k]
+                factor = a[i][k]
                 for j in range(k, n):
-                    a[i][j] = a[i][j] - aux * a[k][j]
-                b[i] = b[i] - aux * b[k]
+                    a[i][j] = a[i][j] - factor * a[k][j]
+                b[i] = b[i] - factor * b[k]
 
     def _parteDescendenteOpt(self, a, b):
         n = len(b)
@@ -27,20 +29,20 @@ class Gauss:
                 continue  # Skip division by zero
             if k > 0:
                 a[k][k - 1] = a[k][k - 1] / aux
-            a[k][k] /= a[k][k]
+            a[k][k] /= aux
             if k < n - 1:
                 a[k][k + 1] = a[k][k + 1] / aux
             b[k] = b[k] / aux
 
             if k < n - 1:
-                aux = a[k + 1][k]
+                factor = a[k + 1][k]
                 a[k + 1][k] = 0.0
-                a[k + 1][k + 1] = a[k + 1][k + 1] - aux * a[k][k + 1]
-                b[k + 1] = b[k + 1] - aux * b[k]
+                a[k + 1][k + 1] = a[k + 1][k + 1] - factor * a[k][k + 1]
+                b[k + 1] = b[k + 1] - factor * b[k]
 
     def _parteAcendente(self, a, b):
         n = len(b)
-        x = list(range(n))
+        x = [0] * n  # Initialize x with zeros
         x[n - 1] = b[n - 1]
         for i in range(n - 2, -1, -1):
             suma = 0
@@ -49,8 +51,13 @@ class Gauss:
             x[i] = b[i] - suma
         return x
 
-    def gauss(self, a, b):
-        self._parteDecendente(a, b)
+    def gauss(self, a, b, tridiagonal=False):
+        a = np.array(a, dtype=float)  # Convert to numpy array for easier handling
+        b = np.array(b, dtype=float)
+        if tridiagonal:
+            self._parteDescendenteOpt(a, b)
+        else:
+            self._parteDecendente(a, b)
         return self._parteAcendente(a, b)
 
     def gaussConPivote(self, a, b):
@@ -84,43 +91,34 @@ class TestGauss:
         return a, b
 
     def random_full_matrices(self, size):
-
-        scale_factor = 10
-        a = [[random.randint(1, 10) // scale_factor for _ in range(size)] for _ in range(size)]
-        b = [random.randint(1, 10) // scale_factor for _ in range(size)]
+        a = np.random.randint(10, size=(size, size))
+        b = np.random.randint(10, size=(size, 1))
         return a, b
 
     def test_tridiagonal_matrices(self):
 
         for size in [100, 1000]:
             a, b = self.random_tridiagonal_matrices(size)
-            print("Matriz original (a):")
-            for row in a:
-                print(row)
-            print("Vector b original:")
-            print(b)
-
             result = self.gauss.gaussOptTrdiagonal(a, b)
-            print("Resultado después de aplicar la eliminación gaussiana:")
-            print(result)
+            A = np.array(a)
+            R = np.array(result)
+            # Multiplicar las matrices
+            resultado = A @ R
 
-
-            assert len(result) == len(b), "La longitud de la solución no coincide con el vector b"
+            assert np.allclose(resultado, np.array(b)), "La matriz no es igual"
+            print(f"Funciona con {size}")
 
     def test_full_matrices(self):
 
         for size in [30, 50]:
             a, b = self.random_full_matrices(size)
-            print("Matriz original (a):")
-            for row in a:
-                print(row)
-            print("Vector b original:")
-            print(b)
-
             result = self.gauss.gauss(a, b)
-            print("Resultado después de aplicar la eliminación gaussiana:")
-            print(result)
-            assert len(result) == len(b), "La longitud de la solución no coincide con el vector b"
+            A = np.array(a)
+            R = np.array(result)
+            # Multiplicar las matrices
+            resultado = A @ R
+            assert np.allclose(resultado, np.array(b)), "La matriz no es igual"
+            print(f"Funciona con {size}")
 
     def test_time_matrx(self):
         size = 800
