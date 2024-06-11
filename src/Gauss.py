@@ -85,7 +85,6 @@ class TestGauss:
         self.gauss = Gauss()
 
     def random_tridiagonal_matrices(self, size):
-
         a = [[random.randint(1, 10) if abs(i-j) <= 1 else 0 for j in range(size)] for i in range(size)]
         b = [random.randint(1, 10) for _ in range(size)]
         return a, b
@@ -96,7 +95,6 @@ class TestGauss:
         return a, b
 
     def test_tridiagonal_matrices(self):
-
         for size in [100, 1000]:
             a, b = self.random_tridiagonal_matrices(size)
             result = self.gauss.gaussOptTrdiagonal(a, b)
@@ -109,7 +107,6 @@ class TestGauss:
             print(f"Funciona con {size}")
 
     def test_full_matrices(self):
-
         for size in [30, 50]:
             a, b = self.random_full_matrices(size)
             result = self.gauss.gauss(a, b)
@@ -134,7 +131,19 @@ class TestGauss:
         print(f"Funcion no optimizada tardo {delta_non_opt.total_seconds()} segundos")
         print(f"Funcion optimizada tardo {delta_opt_time.total_seconds()} segundos")
 
+    def test_full_matrices_precision(self):
+        for size in [30, 50]:
+            a, b = self.random_full_matrices(size)
+            result_no_pivot = self.gauss.gauss(a, b)
+            result_pivot = self.gauss.gaussConPivote(a, b)
+            A = np.array(a)
+            b = np.array(b)
+            residual_no_pivot = np.linalg.norm(A @ result_no_pivot - b)
+            residual_pivot = np.linalg.norm(A @ result_pivot - b)
+            print(f"Size: {size} - Residual without pivot: {residual_no_pivot}, with pivot: {residual_pivot}")
+
 tester = TestGauss()
 tester.test_tridiagonal_matrices()
 tester.test_time_matrx()
 tester.test_full_matrices()
+tester.test_full_matrices_precision()
